@@ -1,13 +1,12 @@
-const TOKEN = import.meta.env.VITE_CANVAS_TOKEN
-
 const headers = {
-  Authorization: `Bearer ${TOKEN}`,
+  Authorization: `Bearer ${import.meta.env.VITE_CANVAS_TOKEN}`,
   'Content-Type': 'application/json',
 }
 
 export interface Course {
   id: number
   name: string
+  course_code: string
 }
 
 export interface Assignment {
@@ -16,6 +15,7 @@ export interface Assignment {
   due_at: string
   course_id: number
   course_name: string
+  course_code: string
   submitted_at: string | null
   assignment_group_name: string
 }
@@ -25,20 +25,12 @@ export interface AssignmentGroup {
   name: string
 }
 
-export async function getCourses() {
-  const response = await fetch('/api/courses', { headers })
-  if (!response.ok) throw new Error('Failed to fetch courses')
-  return response.json()
+async function apiFetch(path: string) {
+  const res = await fetch(path, { headers })
+  if (!res.ok) throw new Error(`Failed to fetch ${path}`)
+  return res.json()
 }
 
-export async function getAssignments(courseId: number) {
-  const response = await fetch(`/api/courses/${courseId}/assignments`, { headers })
-  if (!response.ok) throw new Error('Failed to fetch assignments')
-  return response.json()
-}
-
-export async function getAssignmentGroups(courseId: number) {
-  const response = await fetch(`/api/courses/${courseId}/assignment_groups`, { headers })
-  if (!response.ok) throw new Error('Failed to fetch assignment groups')
-  return response.json()
-}
+export const getCourses = () => apiFetch('/api/courses')
+export const getAssignments = (id: number) => apiFetch(`/api/courses/${id}/assignments`)
+export const getAssignmentGroups = (id: number) => apiFetch(`/api/courses/${id}/assignment_groups`)
