@@ -1,70 +1,95 @@
 import { useEffect, useState } from "react"
 import TimerDisplay from "../components/TimerDisplay"
+import "./Timer.css"
 
 export default function Timer() {
-    const [secondsLeft, setSecondsLeft] = useState(0)
+    const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
     const [isRunning, setIsRunning] = useState(false)
-    const [completedTasks, setCompletedTasks] = useState(0)
-    const [todayMinutes, setTodayMinutes] = useState(0)
+    const [showModal, setShowModal] = useState(false)
+
+    const [completedTasks] = useState(3)
+    const [totalMinutes, setTotalMinutes] = useState(0)
 
     useEffect(() => {
-        if (!isRunning) return
+    if (!isRunning || secondsLeft === null) return
 
-        const timer = setInterval(() => {
-            setSecondsLeft((prev) => {
-                if (prev === 0) {
-                    clearInterval(timer)
-                    setIsRunning(false)
-                    setTodayMinutes((m) => m + 45)
-                    return 0
-                }
-                return prev - 1
-            })
-        }, 1000)
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval)
+          setIsRunning(false)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    
+        return () => clearInterval(interval)
+    }, [isRunning, secondsLeft])
 
-        return () => clearInterval(timer)
-    }, [isRunning])
+    const startWithMinutes = (minutes: number) => {
+        setSecondsLeft(minutes * 60)
+        setTotalMinutes((m) => m + minutes)
+        setShowModal(false)
+        setIsRunning(true)
+    }
 
-    const toggleTimer = () => setIsRunning((v) => !v)
-    const resetTimer = () => {
+    const stopTimer = () => {
         setIsRunning(false)
-        setSecondsLeft(45 * 60)
+        setSecondsLeft(null)
     }
 
     return (
-        <main className="timer-page">
-            <h1>Time Tracker</h1>
-            <section className="stats-grid" aria-label="Daily progress">
-                <div className="card">
-                <h2>Today's Time</h2>
-                <p>{Math.floor(todayMinutes / 60)}h {todayMinutes % 60}m</p>
-                </div>
+        <main className="timer-layout">
+        <h1>Focus Tracker</h1>
 
-                <div className="card">
-                <h2>Tasks Done</h2>
-                <p>{completedTasks}/--</p>
-                </div>
-            </section>
+        <div className="timer-top-cards">
+            <div className="timer-card">
+            <h2>Total Time</h2>
+            <p>{totalMinutes} min</p>
+            </div>
 
-            <section className="timer-card" aria-label="Focus timer">
+            <div className="timer-card">
+            <h2>Tasks Done</h2>
+            <p>{completedTasks}</p>
+            </div>
+        </div>
+
+        <div className="timer-center">
+            {secondsLeft === null ? (
+            <button
+                className="start-button"
+                onClick={() => setShowModal(true)}
+            >
+                Start Timer
+            </button>
+            ) : (
+            <>
                 <TimerDisplay totalSeconds={secondsLeft} />
-
-                <div className="button-row">
-                <button onClick={toggleTimer}>
-                    {isRunning ? 'Pause Timer' : 'Start Timer'}
+                <button className="stop-button" onClick={stopTimer}>
+                Stop Timer
                 </button>
-                <button onClick={resetTimer}>Reset</button>
-                </div>
-            </section>
+            </>
+            )}
+        </div>
 
-            <section className="tasks-card">
-                <h2>Upcoming Tasks</h2>
-                <ul>
-                <li>Task here</li>
-                <li>Task here</li>
-                <li>Task here</li>
-                </ul>
-            </section>
+        {showModal && (
+            <div className="modal-overlay" role="dialog" aria-modal="true">
+            <div className="modal">
+                <h2>Select Study Time</h2>
+                <div className="time-options">
+                {[15, 30, 45, 60, 90].map((min) => (
+                    <button key={min} onClick={() => startWithMinutes(min)}>
+                    {min} min
+                    </button>
+                ))}
+                </div>
+                <button className="close" onClick={() => setShowModal(false)}>
+                Cancel
+                </button>
+            </div>
+            </div>
+        )}
         </main>
     )
 }

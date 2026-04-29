@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --surface: #ffffff;
+  --border: #e2e0da;
+  --text: #1a1916;
+  --text-muted: #8a8780;
+  --purple: #6c5ce7;
+
+  --radius: 6px;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  font-family: var(--font-ui);
+}
+
+.timer-layout {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.timer-layout h1 {
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.timer-top-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.timer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.timer-card h2 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.timer-card p {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.timer-center {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.start-button {
+  background: var(--purple);
+  color: white;
+  border: none;
+  padding: 1.25rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.time-display {
+  font-size: 4rem;
+  font-family: var(--font-mono);
+  margin-bottom: 1rem;
+  color: var(--border);
+}
+
+.stop-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: var(--purple);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  width: 300px;
+  text-align: center;
+}
+
+.time-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.time-options button {
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+}
+
+.close {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
