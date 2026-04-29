@@ -9,6 +9,7 @@ export default function Timer() {
 
     const [completedTasks] = useState(3)
     const [totalMinutes, setTotalMinutes] = useState(0)
+    const [sessionStart, setSessionStart] = useState<number | null>(null)
 
     useEffect(() => {
     if (!isRunning || secondsLeft === null) return
@@ -18,6 +19,14 @@ export default function Timer() {
         if (prev === null || prev <= 1) {
           clearInterval(interval)
           setIsRunning(false)
+
+          if (sessionStart) {
+            const elapsedMs = Date.now() - sessionStart
+            const elapsedMinutes = Math.floor(elapsedMs / 60000)
+            setTotalMinutes((m) => m + elapsedMinutes)
+            setSessionStart(null)
+          }
+
           return 0
         }
         return prev - 1
@@ -29,14 +38,21 @@ export default function Timer() {
 
     const startWithMinutes = (minutes: number) => {
         setSecondsLeft(minutes * 60)
-        setTotalMinutes((m) => m + minutes)
+        setSessionStart(Date.now())
         setShowModal(false)
         setIsRunning(true)
     }
 
     const stopTimer = () => {
+        if (sessionStart) {
+            const elapsedMs = Date.now() - sessionStart
+            const elapsedMinutes = Math.floor(elapsedMs / 60000)
+            setTotalMinutes((m) => m + elapsedMinutes)
+        }
+
         setIsRunning(false)
         setSecondsLeft(null)
+        setSessionStart(null)
     }
 
     return (
