@@ -78,7 +78,7 @@ export default function Timer() {
             <div className="modal">
                 <h2>Select Study Time</h2>
                 <div className="time-options">
-                {[15, 30, 45, 60, 90].map((min) => (
+                {[15, 30, 45, 60].map((min) => (
                     <button key={min} onClick={() => startWithMinutes(min)}>
                     {min} min
                     </button>
