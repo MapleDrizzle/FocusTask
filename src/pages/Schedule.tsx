@@ -381,12 +381,13 @@ export default function Schedule() {
             {[...groupByDate(visiblePastAssignments).entries()]
               .sort(([a], [b]) => a - b)
               .map(([timestamp, dateAssignments]) => {
-                const filtered = filterComplete(dateAssignments)
-                if (filtered.length === 0) return null
+                // ─── FIX: don't apply filterComplete here so submitted
+                //         assignments always appear in Previous ───────────
+                if (dateAssignments.length === 0) return null
                 return (
                   <div key={timestamp} className="schedule-previous-date">
                     <h3>{formatDate(new Date(timestamp))}</h3>
-                    {filtered.map(a => (
+                    {dateAssignments.map(a => (
                       <AssignmentRow key={a.id} assignment={a} status={getStatus(a)} onCycle={cycleStatus} />
                     ))}
                   </div>
