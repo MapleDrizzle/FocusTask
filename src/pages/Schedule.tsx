@@ -2,19 +2,13 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { getCourses, getAssignments, getAssignmentGroups, type Course, type Assignment, type AssignmentGroup } from '../api/canvasApi'
 import './Schedule.css'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type Status = 'To Do' | 'In Progress' | 'Complete'
 
 type DayEntry =
   | { type: 'day'; date: Date }
   | { type: 'range'; start: Date; end: Date }
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 const STATUS_CYCLE: Status[] = ['To Do', 'In Progress', 'Complete']
-
-// ─── Pure utilities ───────────────────────────────────────────────────────────
 
 function nextStatus(current: Status): Status {
   return STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length]
@@ -103,7 +97,14 @@ function formatShortDate(date: Date): string {
   return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+function CardLabel({ icon, children }: { icon: string; children: React.ReactNode }) {
+  return (
+    <div className="card-label">
+      <span className="card-label-icon" aria-hidden="true">{icon}</span>
+      {children}
+    </div>
+  )
+}
 
 function AssignmentRow({
   assignment,
@@ -130,8 +131,6 @@ function AssignmentRow({
     </div>
   )
 }
-
-// ─── Custom hook ──────────────────────────────────────────────────────────────
 
 function useScheduleData() {
   const [courses, setCourses] = useState<Course[]>([])
@@ -172,8 +171,6 @@ function useScheduleData() {
 
   return { courses, assignments }
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Schedule() {
   const { courses, assignments } = useScheduleData()
@@ -301,6 +298,14 @@ export default function Schedule() {
   return (
     <div className="schedule-layout">
       <div className="schedule-sidebar">
+        <h3>Accessibility</h3>
+          <label>
+            <input
+              type="checkbox"
+              onChange={() => document.documentElement.classList.toggle('colorless')}
+            />
+            {' '}Turn Off Colors
+          </label>
         <h3>Courses</h3>
         {courses.map(course => (
           <div key={course.id}>
@@ -368,7 +373,7 @@ export default function Schedule() {
 
         {filterComplete(lateAssignments).length > 0 && (
           <div className="schedule-late">
-            <h2>Late</h2>
+            <CardLabel icon="⚠">Late</CardLabel>
             {filterComplete(lateAssignments).map(a => (
               <AssignmentRow key={a.id} assignment={a} status={getStatus(a)} onCycle={cycleStatus} />
             ))}
@@ -377,16 +382,15 @@ export default function Schedule() {
 
         {visiblePastAssignments.length > 0 && (
           <div className="schedule-previous">
-            <h2>Previous</h2>
+            <CardLabel icon="↩">Previous</CardLabel>
             {[...groupByDate(visiblePastAssignments).entries()]
               .sort(([a], [b]) => a - b)
               .map(([timestamp, dateAssignments]) => {
-                const filtered = filterComplete(dateAssignments)
-                if (filtered.length === 0) return null
+                if (dateAssignments.length === 0) return null
                 return (
                   <div key={timestamp} className="schedule-previous-date">
                     <h3>{formatDate(new Date(timestamp))}</h3>
-                    {filtered.map(a => (
+                    {dateAssignments.map(a => (
                       <AssignmentRow key={a.id} assignment={a} status={getStatus(a)} onCycle={cycleStatus} />
                     ))}
                   </div>
@@ -410,7 +414,10 @@ export default function Schedule() {
 
           return (
             <div key={entry.date.toISOString()} className={`schedule-day${isToday ? ' today' : ''}`}>
-              <h2>{formatDate(entry.date)}</h2>
+              {isToday
+                ? <CardLabel icon="★">Today — {formatDate(entry.date)}</CardLabel>
+                : <div className="card-label"><span className="card-label-icon" aria-hidden="true">◈</span>{formatDate(entry.date)}</div>
+              }
               {dateAssignments.length === 0 ? (
                 <p>No assignments due</p>
               ) : (
