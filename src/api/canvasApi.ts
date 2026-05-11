@@ -38,10 +38,10 @@ const MOCK_ASSIGNMENT_GROUPS: AssignmentGroup[] = [
 
 const MOCK_COURSES: Course[] = [
   { id: 1, name: 'Artificial Intelligence', course_code: 'CISC481'   },
-  { id: 2, name: 'Introduction to Operations Management',               course_code: 'BUAD306' },
-  { id: 3, name: 'Development of Assistive Technology',          course_code: 'CISC334'  },
-  { id: 4, name: 'Computer Science Senior Design Project II',            course_code: 'CISC499'   },
-  { id: 5, name: 'Probability Theory and Simulation Methods',            course_code: 'MATH350'   },
+  { id: 2, name: 'Introduction to Operations Management',course_code: 'BUAD306' },
+  { id: 3, name: 'Development of Assistive Technology',course_code: 'CISC334'  },
+  { id: 4, name: 'Computer Science Senior Design Project II',course_code: 'CISC499'   },
+  { id: 5, name: 'Probability Theory and Simulation Methods',course_code: 'MATH350'   },
 ]
 
 
