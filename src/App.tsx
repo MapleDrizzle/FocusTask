@@ -4,7 +4,6 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Schedule from './pages/Schedule'
 import Timer from './pages/Timer'
-import Stats from './pages/Stats'
 
 function App() {
   return (
@@ -14,7 +13,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/timer" element={<Timer />} />
-        <Route path="/stats" element={<Stats />} />
       </Routes>
     </Router>
   )

@@ -182,8 +182,7 @@ export default function Home() {
 
         <section className="home-card home-card--upcoming" aria-label="Upcoming tasks">
           <div className="home-upcoming-header">
-            <div className="home-upcoming-title">Upcoming tasks</div>
-            <div className="home-upcoming-subtitle">(like on Canvas)</div>
+            <div className="home-upcoming-title">Upcoming Canvas Tasks:</div>
           </div>
 
           {upcomingTasks.length === 0 ? (

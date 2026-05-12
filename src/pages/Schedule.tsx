@@ -306,6 +306,12 @@ export default function Schedule() {
             />
             {' '}Turn Off Colors
           </label>
+
+        <h3>View</h3>
+          <label>
+            <input type="checkbox" checked={hideComplete} onChange={() => setHideComplete(prev => !prev)} />
+            {' '}Hide complete
+          </label>
         <h3>Courses</h3>
         {courses.map(course => (
           <div key={course.id}>
@@ -328,10 +334,10 @@ export default function Schedule() {
 
         <h3>Timeframe</h3>
         {[
-          { value: 'next_week', label: 'Next Week' },
-          { value: 'next_2_weeks', label: 'Next 2 Weeks' },
-          { value: 'next_month', label: 'Next Month' },
           { value: 'everything', label: 'Everything' },
+          { value: 'next_month', label: 'Next Month' },
+          { value: 'next_2_weeks', label: 'Next 2 Weeks' },
+          { value: 'next_week', label: 'Next Week' },  
         ].map(({ value, label }) => (
           <div key={value}>
             <label>
@@ -361,11 +367,7 @@ export default function Schedule() {
           </div>
         ))}
 
-        <h3>View</h3>
-        <label>
-          <input type="checkbox" checked={hideComplete} onChange={() => setHideComplete(prev => !prev)} />
-          {' '}Hide complete
-        </label>
+       
       </div>
 
       <div className="schedule-main">
