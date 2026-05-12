@@ -1,111 +1,240 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import TimerDisplay from "../components/TimerDisplay"
+import { useTimer } from "../components/TimerContext"
 import "./Timer.css"
 
+type Mood = "Low" | "Medium" | "High"
+
 export default function Timer() {
-    const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
-    const [isRunning, setIsRunning] = useState(false)
-    const [showModal, setShowModal] = useState(false)
+  const {
+    secondsLeft,
+    sessionDuration,
+    isRunning,
+    totalMinutes,
+    sessions,
+    mood,
+    setMood,
+    startWithMinutes,
+    stopTimer,
+  } = useTimer()
 
-    const [completedTasks] = useState(3)
-    const [totalMinutes, setTotalMinutes] = useState(0)
-    const [sessionStart, setSessionStart] = useState<number | null>(null)
+  const [showModal, setShowModal] = useState(false)
 
-    useEffect(() => {
-    if (!isRunning || secondsLeft === null) return
+  const completedTasks = 3
 
-    const interval = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval)
-          setIsRunning(false)
+  const progressPct =
+    sessionDuration > 0 && secondsLeft !== null
+      ? (secondsLeft / sessionDuration) * 100
+      : 0
 
-          if (sessionStart) {
-            const elapsedMs = Date.now() - sessionStart
-            const elapsedMinutes = Math.floor(elapsedMs / 60000)
-            setTotalMinutes((m) => m + elapsedMinutes)
-            setSessionStart(null)
-          }
+  const moodColor = (m: Mood) =>
+    m === "High"
+      ? "#2e7d52"
+      : m === "Low"
+      ? "#c0392b"
+      : "#b07d1a"
 
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-    
-        return () => clearInterval(interval)
-    }, [isRunning, secondsLeft])
+  return (
+    <main className="timer-layout">
+      <h1>Focus Timer</h1>
 
-    const startWithMinutes = (minutes: number) => {
-        setSecondsLeft(minutes * 60)
-        setSessionStart(Date.now())
-        setShowModal(false)
-        setIsRunning(true)
-    }
-
-    const stopTimer = () => {
-        if (sessionStart) {
-            const elapsedMs = Date.now() - sessionStart
-            const elapsedMinutes = Math.floor(elapsedMs / 60000)
-            setTotalMinutes((m) => m + elapsedMinutes)
-        }
-
-        setIsRunning(false)
-        setSecondsLeft(null)
-        setSessionStart(null)
-    }
-
-    return (
-        <main className="timer-layout">
-        <h1>Focus Tracker</h1>
-
-        <div className="timer-top-cards">
-            <div className="timer-card">
-            <h2>Total Time</h2>
-            <p>{totalMinutes} min</p>
-            </div>
-
-            <div className="timer-card">
-            <h2>Tasks Done</h2>
-            <p>{completedTasks}</p>
-            </div>
+      {/* Top stat cards */}
+      <div className="timer-top-cards">
+        <div className="timer-stat-card">
+          <h2>Total Time</h2>
+          <p>{totalMinutes} min</p>
         </div>
 
-        <div className="timer-center">
-            {secondsLeft === null ? (
-            <button
-                className="start-button"
-                onClick={() => setShowModal(true)}
-            >
-                Start Timer
-            </button>
-            ) : (
-            <>
-                <TimerDisplay totalSeconds={secondsLeft} />
-                <button className="stop-button" onClick={stopTimer}>
-                Stop Timer
-                </button>
-            </>
-            )}
+        <div className="timer-stat-card">
+          <h2>Sessions</h2>
+          <p>{sessions.length}</p>
         </div>
 
-        {showModal && (
-            <div className="modal-overlay" role="dialog" aria-modal="true">
-            <div className="modal">
-                <h2>Select Study Time</h2>
-                <div className="time-options">
-                {[15, 30, 45, 60].map((min) => (
-                    <button key={min} onClick={() => startWithMinutes(min)}>
-                    {min} min
-                    </button>
-                ))}
-                </div>
-                <button className="close" onClick={() => setShowModal(false)}>
-                Cancel
-                </button>
-            </div>
-            </div>
+        <div className="timer-stat-card">
+          <h2>Tasks Done</h2>
+          <p>{completedTasks}</p>
+        </div>
+      </div>
+
+      {/* Main timer card */}
+      <div className="timer-main-card">
+        <TimerDisplay
+          totalSeconds={secondsLeft ?? 0}
+        />
+
+        {/* Progress bar */}
+        {isRunning && (
+          <div
+            className="progress-bar-wrap"
+            aria-hidden="true"
+          >
+            <div
+              className="progress-bar"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
         )}
-        </main>
-    )
+
+        <p className="session-status-label">
+          {isRunning
+            ? "Session in progress"
+            : "Ready to focus"}
+        </p>
+
+        {/* Mood selector */}
+        {!isRunning && (
+          <div
+            className="mood-row"
+            role="group"
+            aria-label="Focus mood"
+          >
+            <span className="mood-label">
+              Focus mood:
+            </span>
+
+            {(["Low", "Medium", "High"] as Mood[]).map(
+              (m) => (
+                <button
+                  key={m}
+                  className={`mood-btn${
+                    mood === m ? " active" : ""
+                  }`}
+                  onClick={() => setMood(m)}
+                  style={
+                    mood === m
+                      ? {
+                          borderColor: moodColor(m),
+                          color: moodColor(m),
+                        }
+                      : {}
+                  }
+                >
+                  {m}
+                </button>
+              )
+            )}
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="timer-actions">
+          {!isRunning ? (
+            <button
+              className="start-button"
+              onClick={() => setShowModal(true)}
+            >
+              ▶ Start Timer
+            </button>
+          ) : (
+            <div className="running-btn-row">
+              <button
+                className="stop-button"
+                onClick={stopTimer}
+              >
+                ⏹ Stop
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Previous sessions */}
+      <section className="sessions-section">
+        <h3 className="section-heading">
+          Previous Sessions
+        </h3>
+
+        <div className="sessions-card">
+          {sessions.length === 0 ? (
+            <p className="sessions-empty">
+              No sessions yet — start your first timer!
+            </p>
+          ) : (
+            sessions.map((s, i) => (
+              <div
+                key={s.id}
+                className="session-row"
+              >
+                <span
+                  className="session-dot"
+                  style={{
+                    background: moodColor(s.mood),
+                  }}
+                  title={`Mood: ${s.mood}`}
+                />
+
+                <div className="session-info">
+                  <span className="session-name">
+                    Session {sessions.length - i}
+
+                    {s.isTest && (
+                      <span className="test-tag">
+                        test
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="session-meta">
+                    {s.timeStr} ·{" "}
+                    {s.completed ? (
+                      <span className="status-complete">
+                        completed
+                      </span>
+                    ) : (
+                      <span className="status-stopped">
+                        stopped early
+                      </span>
+                    )}{" "}
+                    · mood: {s.mood}
+                  </span>
+                </div>
+
+                <span className="session-duration">
+                  {s.minutes} min
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
+
+      {/* Time picker modal */}
+      {showModal && (
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="modal">
+            <h2>
+              How long do you want to focus?
+            </h2>
+
+            <div className="time-options">
+              {[5, 10, 15, 25, 30, 45, 60, 90].map(
+                (min) => (
+                  <button
+                    key={min}
+                    onClick={() => {
+                      startWithMinutes(min)
+                      setShowModal(false)
+                    }}
+                  >
+                    {min} min
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              className="close"
+              onClick={() => setShowModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </main>
+  )
 }

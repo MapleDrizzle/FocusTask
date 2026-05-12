@@ -1,77 +1,208 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+
 :root {
-  --surface2: #ffffff;
-  --border2: #e2e0da;
-  --purple: #6c5ce7;
+  --surface2:   #ffffff;
+  --border2:    #e2e0da;
+  --purple:     #6c5ce7;
+  --text-muted: #8a8780;
 
-  --radius: 6px;
-  --font-ui: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --radius:     6px;
+  --font-ui:    'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
 }
 
-body {
-  background: var(--bg);
-  font-family: var(--font-ui);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface2:   #1e1d1b;
+    --border2:    #2e2c29;
+  }
 }
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
 
 .timer-layout {
   max-width: 700px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 1rem 3rem;
+  font-family: var(--font-ui);
 }
 
 .timer-layout h1 {
   font-size: 1.75rem;
-  margin-bottom: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--text-h);
 }
+
+/* ── Streak badge ───────────────────────────────────────────────────────── */
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  padding: 0.3rem 0.875rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* ── Stat cards ─────────────────────────────────────────────────────────── */
 
 .timer-top-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
-.timer-card {
+.timer-stat-card {
   background: var(--surface2);
   border: 1px solid var(--border2);
   border-radius: var(--radius);
-  padding: 1rem;
+  padding: 0.875rem 1rem;
 }
 
-.timer-card h2 {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.timer-card p {
-  font-size: 1.25rem;
+.timer-stat-card h2 {
+  font-size: 0.7rem;
   font-weight: 600;
-  color: rgb(72, 69, 69);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0 0 0.35rem;
 }
 
-.timer-center {
-  margin-top: 2rem;
+.timer-stat-card p {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin: 0;
+}
+
+/* ── Main timer card ────────────────────────────────────────────────────── */
+
+.timer-main-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 2rem 1.5rem 1.75rem;
   text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Time display ───────────────────────────────────────────────────────── */
+
+.time-display {
+  font-size: 4rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.75rem;
+  color: var(--border2);
+  transition: color 0.3s;
+}
+
+.time-display--running {
+  color: #2e7d52;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────────────── */
+
+.progress-bar-wrap {
+  width: 100%;
+  background: var(--border2);
+  border-radius: 999px;
+  height: 6px;
+  margin-bottom: 0.875rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--purple);
+  transition: width 1s linear;
+}
+
+/* ── Status label ───────────────────────────────────────────────────────── */
+
+.session-status-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  min-height: 1.3em;
+}
+
+/* ── Mood selector ──────────────────────────────────────────────────────── */
+
+.mood-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mood-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mood-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  padding: 0.3rem 0.875rem;
+  font-size: 0.8rem;
+  font-family: var(--font-ui);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.mood-btn:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.mood-btn.active {
+  font-weight: 600;
+}
+
+/* ── Action buttons ─────────────────────────────────────────────────────── */
+
+.timer-actions {
+  display: flex;
+  justify-content: center;
 }
 
 .start-button {
   background: var(--purple);
   color: white;
   border: none;
-  padding: 1.25rem 2rem;
-  font-size: 1.2rem;
+  padding: 1rem 2.25rem;
+  font-size: 1.1rem;
+  font-family: var(--font-ui);
   border-radius: 999px;
   cursor: pointer;
+  transition: opacity 0.15s;
 }
 
-.time-display {
-  font-size: 4rem;
-  font-family: var(--font-mono);
-  margin-bottom: 1rem;
-  color: var(--border2);
+.start-button:hover {
+  opacity: 0.88;
+}
+
+.running-btn-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .stop-button {
@@ -79,47 +210,211 @@ body {
   border-radius: 999px;
   border: 1px solid var(--border2);
   background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--text-h);
   cursor: pointer;
+  transition: background 0.15s;
 }
+
+.stop-button:hover {
+  background: var(--border2);
+}
+
+.test-button {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #d4982a;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #b07d1a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.test-button:hover {
+  background: rgba(212, 152, 42, 0.08);
+}
+
+/* ── Sessions section ───────────────────────────────────────────────────── */
+
+.sessions-section {
+  margin-top: 0.5rem;
+}
+
+.section-heading {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 0.625rem;
+}
+
+.sessions-card {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.sessions-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 1rem 0;
+  margin: 0;
+}
+
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border2);
+}
+
+.session-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.session-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.session-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.session-name {
+  font-size: 0.875rem;
+  color: var(--text-h);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.test-tag {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: #b07d1a;
+  border: 1px solid #d4982a;
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.session-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.status-complete {
+  color: #2e7d52;
+}
+
+.status-stopped {
+  color: var(--text-muted);
+}
+
+.session-duration {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Modal ──────────────────────────────────────────────────────────────── */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 100;
 }
 
 .modal {
-  background: var(--purple);
-  padding: 1.5rem;
-  border-radius: var(--radius);
+  background: var(--surface2);
+  padding: 1.75rem;
+  border-radius: 12px;
   border: 1px solid var(--border2);
-  width: 400px;
+  width: 360px;
   text-align: center;
+}
+
+.modal h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-h);
+  margin-bottom: 1rem;
 }
 
 .time-options {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
-  margin: 1rem 0;
+  margin: 0 0 1rem;
 }
 
 .time-options button {
-  padding: 0.5rem;
+  padding: 0.6rem 0.25rem;
   border: 1px solid var(--border2);
+  border-radius: var(--radius);
   background: transparent;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-h);
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.time-options button:hover {
+  background: var(--border2);
+  border-color: var(--purple);
 }
 
 .close {
-  margin-top: 0.5rem;
   background: none;
-  padding: 0.5rem;
+  padding: 0.5rem 1.25rem;
   border: 1px solid var(--border2);
-  border-radius: 5px;
-  color: white;
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   cursor: pointer;
+}
+
+.close:hover {
+  background: var(--border2);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .timer-top-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .timer-top-cards .timer-stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .time-display {
+    font-size: 3rem;
+  }
+
+  .modal {
+    width: 90vw;
+  }
 }
