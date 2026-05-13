@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import {
   getCourses,
   getAssignments,
@@ -8,17 +8,10 @@ import {
   type AssignmentGroup,
   type Course,
 } from "../api/canvasApi"
+import { getMinutesForToday, MINUTES_BY_DATE_KEY } from "../utils/focusMinutesStorage"
 import "./Home.css"
 
 const DONE_TASKS_KEY = "homepage-done-tasks"
-const MINUTES_BY_DATE_KEY = "focusTrackerMinutesByDate"
-
-function getLocalDateKey(d: Date = new Date()): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, "0")
-  const day = String(d.getDate()).padStart(2, "0")
-  return `${y}-${m}-${day}`
-}
 
 function loadDoneTaskIds(): Set<number> {
   try {
@@ -34,25 +27,6 @@ function loadDoneTaskIds(): Set<number> {
 
 function saveDoneTaskIds(ids: Set<number>) {
   localStorage.setItem(DONE_TASKS_KEY, JSON.stringify([...ids]))
-}
-
-type MinutesByDate = Record<string, number>
-
-function loadMinutesByDate(): MinutesByDate {
-  try {
-    const raw = localStorage.getItem(MINUTES_BY_DATE_KEY)
-    if (!raw) return {}
-    const parsed = JSON.parse(raw)
-    if (!parsed || typeof parsed !== "object") return {}
-    return parsed as MinutesByDate
-  } catch {
-    return {}
-  }
-}
-
-function getMinutesForToday(): number {
-  const map = loadMinutesByDate()
-  return map[getLocalDateKey()] ?? 0
 }
 
 function formatStudyMinutes(totalMinutes: number): string {
@@ -112,13 +86,26 @@ function useHomepageAssignments() {
 }
 
 export default function Home() {
+  const location = useLocation()
   const assignments = useHomepageAssignments()
   const [todayMinutes, setTodayMinutes] = useState<number>(() => getMinutesForToday())
 
   const [checkedTaskIds, setCheckedTaskIds] = useState<Set<number>>(() => loadDoneTaskIds())
 
-  useEffect(() => {
+  function refreshTodayMinutes() {
     setTodayMinutes(getMinutesForToday())
+  }
+
+  useEffect(() => {
+    refreshTodayMinutes()
+  }, [location.pathname, location.key])
+
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key === MINUTES_BY_DATE_KEY) refreshTodayMinutes()
+    }
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
   }, [])
 
   useEffect(() => {
