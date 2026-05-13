@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { addMinutesForToday, getMinutesForToday } from "../utils/focusMinutesStorage";
 
 type Mood = "Low" | "Medium" | "High";
 
@@ -34,7 +35,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [sessionDuration, setSessionDuration] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [totalMinutes, setTotalMinutes] = useState(0);
+  const [totalMinutes, setTotalMinutes] = useState(() => getMinutesForToday());
   const [sessions, setSessions] = useState<Session[]>([]);
   const [mood, setMood] = useState<Mood>("Medium");
   const [isBreak, setIsBreak] = useState(false);
@@ -45,10 +46,15 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const alarmRef = useRef<HTMLAudioElement | null>(null);
 
   const sessionStartRef = useRef<number | null>(null);
+  const isBreakRef = useRef(false);
 
   useEffect(() => {
     sessionStartRef.current = sessionStart;
   }, [sessionStart]);
+
+  useEffect(() => {
+    isBreakRef.current = isBreak;
+  }, [isBreak]);
 
   useEffect(() => {
     alarmRef.current = new Audio("/bell.mp3");
@@ -64,33 +70,42 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const finishSession = (completed: boolean, isTest = false) => {
+  const finishSession = (
+    completed: boolean,
+    isTest = false,
+    opts?: { skipFocusStats?: boolean }
+  ) => {
     const start = sessionStartRef.current;
 
     const elapsedMs = start ? Date.now() - start : 0;
 
     const elapsedMinutes = Math.max(0, Math.round(elapsedMs / 60000));
 
-    setTotalMinutes((m) => m + elapsedMinutes);
+    const skipFocusStats = opts?.skipFocusStats ?? false;
 
-    const now = new Date();
+    if (!skipFocusStats) {
+      addMinutesForToday(elapsedMinutes);
+      setTotalMinutes(getMinutesForToday());
 
-    const timeStr = now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+      const now = new Date();
 
-    setSessions((prev) => [
-      {
-        id: Date.now(),
-        minutes: elapsedMinutes,
-        completed,
-        isTest,
-        timeStr,
-        mood,
-      },
-      ...prev,
-    ]);
+      const timeStr = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      setSessions((prev) => [
+        {
+          id: Date.now(),
+          minutes: elapsedMinutes,
+          completed,
+          isTest,
+          timeStr,
+          mood,
+        },
+        ...prev,
+      ]);
+    }
 
     setSessionStart(null);
     sessionStartRef.current = null;
@@ -153,15 +168,17 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const stopTimer = () => {
+    const onBreak = isBreakRef.current;
     setIsRunning(false);
-    finishSession(false);
+    finishSession(false, false, { skipFocusStats: onBreak });
     setSecondsLeft(null);
     setSessionDuration(0);
     setIsBreak(false);
   };
 
   const addTestMinutes = () => {
-    setTotalMinutes((m) => m + 15);
+    addMinutesForToday(15);
+    setTotalMinutes(getMinutesForToday());
   };
 
   return (
