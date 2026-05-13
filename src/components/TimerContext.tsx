@@ -1,81 +1,84 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
-type Mood = "Low" | "Medium" | "High"
+type Mood = "Low" | "Medium" | "High";
 
 interface Session {
-  id: number
-  minutes: number
-  completed: boolean
-  isTest: boolean
-  timeStr: string
-  mood: Mood
+  id: number;
+  minutes: number;
+  completed: boolean;
+  isTest: boolean;
+  timeStr: string;
+  mood: Mood;
 }
 
 interface TimerContextType {
-  secondsLeft: number | null
-  sessionDuration: number
-  isRunning: boolean
-  totalMinutes: number
-  sessions: Session[]
-  mood: Mood
-  setMood: (m: Mood) => void
-  startWithMinutes: (minutes: number) => void
-  stopTimer: () => void
-  addTestMinutes: () => void
+  secondsLeft: number | null;
+  sessionDuration: number;
+  isRunning: boolean;
+  totalMinutes: number;
+  sessions: Session[];
+  mood: Mood;
+  setMood: (m: Mood) => void;
+  startWithMinutes: (minutes: number) => void;
+  stopTimer: () => void;
+  addTestMinutes: () => void;
+  isBreak: boolean;
+  startBreakTimer: () => void;
+  showProgressBar: boolean;
+  setShowProgressBar: (show: boolean) => void;
 }
 
-const TimerContext = createContext<TimerContextType | null>(null)
+const TimerContext = createContext<TimerContextType | null>(null);
 
-export function TimerProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
-  const [sessionDuration, setSessionDuration] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [totalMinutes, setTotalMinutes] = useState(0)
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [mood, setMood] = useState<Mood>("Medium")
+export function TimerProvider({ children }: { children: React.ReactNode }) {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [sessionDuration, setSessionDuration] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [totalMinutes, setTotalMinutes] = useState(0);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [mood, setMood] = useState<Mood>("Medium");
+  const [isBreak, setIsBreak] = useState(false);
+  const [showProgressBar, setShowProgressBar] = useState(true);
 
-  const [endTime, setEndTime] = useState<number | null>(null)
-  const [sessionStart, setSessionStart] = useState<number | null>(null)
+  const [endTime, setEndTime] = useState<number | null>(null);
+  const [sessionStart, setSessionStart] = useState<number | null>(null);
+  const alarmRef = useRef<HTMLAudioElement | null>(null);
 
-  const sessionStartRef = useRef<number | null>(null)
+  const sessionStartRef = useRef<number | null>(null);
 
   useEffect(() => {
-    sessionStartRef.current = sessionStart
-  }, [sessionStart])
+    sessionStartRef.current = sessionStart;
+  }, [sessionStart]);
 
-  const finishSession = (
-    completed: boolean,
-    isTest = false
-  ) => {
-    const start = sessionStartRef.current
+  useEffect(() => {
+    alarmRef.current = new Audio("/bell.mp3");
+  }, []);
 
-    const elapsedMs = start
-      ? Date.now() - start
-      : 0
+  const playAlarm = () => {
+    if (alarmRef.current) {
+      alarmRef.current.currentTime = 0;
 
-    const elapsedMinutes = Math.max(
-      0,
-      Math.round(elapsedMs / 60000)
-    )
+      alarmRef.current
+        .play()
+        .catch((err) => console.log("Audio play blocked:", err));
+    }
+  };
 
-    setTotalMinutes((m) => m + elapsedMinutes)
+  const finishSession = (completed: boolean, isTest = false) => {
+    const start = sessionStartRef.current;
 
-    const now = new Date()
+    const elapsedMs = start ? Date.now() - start : 0;
+
+    const elapsedMinutes = Math.max(0, Math.round(elapsedMs / 60000));
+
+    setTotalMinutes((m) => m + elapsedMinutes);
+
+    const now = new Date();
 
     const timeStr = now.toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
-    })
+    });
 
     setSessions((prev) => [
       {
@@ -87,57 +90,79 @@ export function TimerProvider({
         mood,
       },
       ...prev,
-    ])
+    ]);
 
-    setSessionStart(null)
-    sessionStartRef.current = null
-    setEndTime(null)
-  }
+    setSessionStart(null);
+    sessionStartRef.current = null;
+    setEndTime(null);
+  };
 
   useEffect(() => {
-    if (!isRunning || !endTime) return
+    if (!isRunning || !endTime) return;
 
     const interval = setInterval(() => {
-      const remaining = Math.max(
-        0,
-        Math.floor((endTime - Date.now()) / 1000)
-      )
+      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
 
-      setSecondsLeft(remaining)
+      setSecondsLeft(remaining);
 
       if (remaining <= 0) {
-        clearInterval(interval)
-        setIsRunning(false)
-        finishSession(true)
-      }
-    }, 1000)
+        clearInterval(interval);
 
-    return () => clearInterval(interval)
-  }, [isRunning, endTime])
+        setSecondsLeft(0);
+        setIsRunning(false);
+
+        playAlarm();
+
+        if (!isBreak) {
+          finishSession(true);
+        }
+
+        setIsBreak(false);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRunning, endTime]);
 
   const startWithMinutes = (minutes: number) => {
-    const start = Date.now()
-    const duration = minutes * 60
-    const end = start + duration * 1000
+    const start = Date.now();
+    const duration = minutes * 60;
+    const end = start + duration * 1000;
 
-    setSecondsLeft(duration)
-    setSessionDuration(duration)
-    setSessionStart(start)
-    sessionStartRef.current = start
-    setEndTime(end)
-    setIsRunning(true)
-  }
+    setSecondsLeft(duration);
+    setSessionDuration(duration);
+    setSessionStart(start);
+    sessionStartRef.current = start;
+    setEndTime(end);
+    setIsBreak(false);
+    setIsRunning(true);
+  };
+
+  const startBreakTimer = () => {
+    const start = Date.now();
+    const duration = 15 * 60;
+    const end = start + duration * 1000;
+
+    setIsBreak(true);
+    setSecondsLeft(duration);
+    setSessionDuration(duration);
+    setSessionStart(start);
+    sessionStartRef.current = start;
+    setEndTime(end);
+    setIsRunning(true);
+  };
 
   const stopTimer = () => {
-    setIsRunning(false)
-    finishSession(false)
-    setSecondsLeft(null)
-    setSessionDuration(0)
-  }
+    setIsRunning(false);
+    finishSession(false);
+    setSecondsLeft(null);
+    setSessionDuration(0);
+    setIsBreak(false);
+  };
 
   const addTestMinutes = () => {
-    setTotalMinutes((m) => m + 15)
-  }
+    setTotalMinutes((m) => m + 15);
+  };
 
   return (
     <TimerContext.Provider
@@ -152,22 +177,24 @@ export function TimerProvider({
         startWithMinutes,
         stopTimer,
         addTestMinutes,
+        isBreak,
+        startBreakTimer,
+        showProgressBar,
+        setShowProgressBar,
       }}
     >
       {children}
     </TimerContext.Provider>
-  )
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTimer() {
-  const context = useContext(TimerContext)
+  const context = useContext(TimerContext);
 
   if (!context) {
-    throw new Error(
-      "useTimer must be used inside TimerProvider"
-    )
+    throw new Error("useTimer must be used inside TimerProvider");
   }
 
-  return context
+  return context;
 }

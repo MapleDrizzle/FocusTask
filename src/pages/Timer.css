@@ -16,7 +16,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --surface2:   #1e1d1b;
-    --border2:    #2e2c29;
+    --border2:    #83807b;
   }
 }
 
@@ -235,6 +235,51 @@
 
 .test-button:hover {
   background: rgba(212, 152, 42, 0.08);
+}
+
+.start-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.break-button {
+  border: none;
+  border-radius: 50px;
+  padding: 12px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: #ebd834;
+  color: #68440f;
+  font-weight: 600;
+  transition: 0.2s;
+  padding: 1rem 1rem;
+  font-size: 1rem;
+  font-family: var(--font-ui);
+}
+
+.break-button:hover {
+  transform: translateY(-1px);
+}
+
+.progress-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.progress-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.progress-toggle input {
+  cursor: pointer;
 }
 
 /* ── Sessions section ───────────────────────────────────────────────────── */
